@@ -40,7 +40,7 @@ npm test                 # 13 pruebas con cobertura
 - Helmet (CSP y cabeceras), límite de tasa global y más estricto en login/registro, cuerpo JSON ≤ 20 KB.
 - Consultas SQL parametrizadas; validación de todas las entradas; el frontend usa `textContent` (sin `innerHTML`).
 - Rol `admin` no se puede crear por la API; solo `comerciante` publica productos.
-- Pipeline: CodeQL (SAST), `npm audit`, Gitleaks (secretos), Trivy (imagen) y Dependabot.
+- Pipeline: Semgrep (SAST), `npm audit`, Gitleaks (secretos), Trivy (imagen) y Dependabot.
 
 ## Ramas y flujo
 - `main`: producción. Solo recibe cambios por Pull Request y despliega al pasar el pipeline.
