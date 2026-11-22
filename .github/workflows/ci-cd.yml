@@ -66,6 +66,9 @@ jobs:
   secretos:
     name: Escaneo de secretos (Gitleaks)
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: read
     steps:
       - uses: actions/checkout@v4
         with:
@@ -82,7 +85,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: docker build -t flores-acho:${{ github.sha }} .
-      - uses: aquasecurity/trivy-action@0.28.0
+      - uses: aquasecurity/trivy-action@v0.33.1
         with:
           image-ref: flores-acho:${{ github.sha }}
           severity: CRITICAL,HIGH
