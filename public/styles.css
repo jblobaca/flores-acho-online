@@ -1,0 +1,37 @@
+:root { --rosa:#c2185b; --verde:#2e7d32; --gris:#f6f4f2; --texto:#222; }
+* { box-sizing: border-box; }
+body { margin:0; font-family: system-ui, sans-serif; color:var(--texto); background:var(--gris); }
+.top { background:#fff; border-bottom:3px solid var(--rosa); padding:12px 20px; display:flex; flex-wrap:wrap; gap:8px 24px; align-items:center; }
+.top h1 { margin:0; font-size:1.4rem; color:var(--rosa); }
+.tag { margin:0; color:#666; flex:1; }
+nav { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+main { display:grid; grid-template-columns: 1fr 340px; gap:20px; padding:20px; max-width:1200px; margin:auto; }
+@media (max-width:800px) { main { grid-template-columns: 1fr; } }
+button { background:var(--rosa); color:#fff; border:0; border-radius:6px; padding:8px 14px; cursor:pointer; font-size:.95rem; }
+button:hover { filter:brightness(1.1); }
+button.secondary { background:#777; }
+button[disabled] { background:#bbb; cursor:not-allowed; }
+input, select { padding:8px; border:1px solid #ccc; border-radius:6px; font-size:.95rem; width:100%; }
+.filters { display:flex; gap:8px; flex-wrap:wrap; margin-bottom:16px; }
+.filters input, .filters select { width:auto; flex:1; min-width:140px; }
+.grid { display:grid; grid-template-columns: repeat(auto-fill, minmax(210px,1fr)); gap:14px; }
+.card { background:#fff; border-radius:10px; padding:14px; box-shadow:0 1px 4px #0002; display:flex; flex-direction:column; gap:6px; }
+.card h3 { margin:0; font-size:1.05rem; }
+.card .meta { font-size:.8rem; color:#666; }
+.price { font-weight:700; color:var(--verde); }
+.bulk { font-size:.8rem; color:var(--rosa); }
+.cart { background:#fff; border-radius:10px; padding:16px; box-shadow:0 1px 4px #0002; align-self:start; position:sticky; top:12px; }
+.cart h2 { margin-top:0; }
+.cart ul { list-style:none; padding:0; margin:0 0 10px; }
+.cart li { display:flex; justify-content:space-between; gap:6px; align-items:center; padding:6px 0; border-bottom:1px solid #eee; font-size:.9rem; }
+.cart li input { width:60px; }
+form label { display:block; margin:8px 0; font-size:.85rem; }
+.hint { font-size:.8rem; color:#555; margin:4px 0; }
+.total { font-size:1.1rem; }
+.error { color:#b71c1c; min-height:1.2em; }
+#msg { margin-top:10px; font-weight:600; }
+#msg.ok { color:var(--verde); }
+#msg.bad { color:#b71c1c; }
+dialog { border:0; border-radius:12px; padding:20px; box-shadow:0 8px 30px #0006; max-width:420px; width:92%; }
+dialog::backdrop { background:#0006; }
+.row { display:flex; gap:8px; flex-wrap:wrap; }
