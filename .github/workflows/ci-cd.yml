@@ -1,0 +1,120 @@
+name: CI/CD
+
+on:
+  push:
+    branches: [main, test]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # 1. BUILD + TEST ---------------------------------------------------------
+  build-test:
+    name: Build y pruebas
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Build (carga de módulos y assets)
+        run: npm run build
+      - name: Pruebas unitarias e integración con cobertura
+        run: npm test | tee test-report.txt
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: reporte-de-pruebas
+          path: test-report.txt
+
+  # 2. SEGURIDAD ------------------------------------------------------------
+  sast:
+    name: SAST (CodeQL)
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      security-events: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3
+
+  dependencias:
+    name: Análisis de dependencias (npm audit)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Falla si hay vulnerabilidades altas o críticas
+        run: npm audit --audit-level=high
+
+  secretos:
+    name: Escaneo de secretos (Gitleaks)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  # 3. IMAGEN DE CONTENEDOR + ESCANEO --------------------------------------
+  contenedor:
+    name: Imagen Docker y escaneo (Trivy)
+    runs-on: ubuntu-latest
+    needs: [build-test]
+    steps:
+      - uses: actions/checkout@v4
+      - run: docker build -t flores-acho:${{ github.sha }} .
+      - uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: flores-acho:${{ github.sha }}
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: '1'
+
+  # 4. DESPLIEGUE (solo main, solo si todo lo anterior pasó) ----------------
+  deploy:
+    name: Despliegue a producción (Render)
+    runs-on: ubuntu-latest
+    needs: [build-test, sast, dependencias, secretos, contenedor]
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    environment:
+      name: production
+      url: ${{ vars.APP_URL }}
+    steps:
+      - name: Disparar despliegue en Render
+        env:
+          RENDER_DEPLOY_HOOK: ${{ secrets.RENDER_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$RENDER_DEPLOY_HOOK" ]; then
+            echo "::error::Falta el secreto RENDER_DEPLOY_HOOK"; exit 1
+          fi
+          curl --fail --silent --show-error -X POST "$RENDER_DEPLOY_HOOK"
+      - name: Verificar que la app responde (smoke test)
+        env:
+          APP_URL: ${{ vars.APP_URL }}
+        run: |
+          for i in $(seq 1 30); do
+            if curl --fail --silent "$APP_URL/api/health" | grep -q '"status":"ok"'; then
+              echo "Aplicación saludable"; exit 0
+            fi
+            echo "Esperando despliegue ($i/30)…"; sleep 10
+          done
+          echo "::error::La aplicación no respondió tras el despliegue"; exit 1
