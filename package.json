@@ -1,0 +1,21 @@
+{
+  "name": "flores-acho-online",
+  "version": "1.0.0",
+  "description": "MVP del marketplace del Mercado de Flores de Acho (Rímac, Lima)",
+  "type": "module",
+  "private": true,
+  "engines": { "node": ">=22.13" },
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "build": "node scripts/build-check.js",
+    "test": "node --test --experimental-test-coverage \"test/**/*.test.js\""
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "express": "^4.21.2",
+    "express-rate-limit": "^7.5.0",
+    "helmet": "^8.0.0",
+    "jsonwebtoken": "^9.0.2"
+  }
+}

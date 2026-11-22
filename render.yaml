@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: flores-acho-online
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    autoDeploy: false   # el despliegue lo dispara el pipeline de GitHub Actions
+    envVars:
+      - key: JWT_SECRET
+        generateValue: true
+      - key: NODE_ENV
+        value: production
